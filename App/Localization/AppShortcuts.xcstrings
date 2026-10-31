@@ -1,0 +1,48 @@
+{
+  "sourceLanguage": "en",
+  "strings": {
+    "Publish a task in ${applicationName}": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringSet": {
+            "state": "translated",
+            "values": [
+              "Publish a task in ${applicationName}"
+            ]
+          }
+        },
+        "zh-Hans": {
+          "stringSet": {
+            "state": "translated",
+            "values": [
+              "用 ${applicationName} 发布任务"
+            ]
+          }
+        }
+      }
+    },
+    "Create a task in ${applicationName}": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringSet": {
+            "state": "translated",
+            "values": [
+              "Create a task in ${applicationName}"
+            ]
+          }
+        },
+        "zh-Hans": {
+          "stringSet": {
+            "state": "translated",
+            "values": [
+              "用 ${applicationName} 创建任务"
+            ]
+          }
+        }
+      }
+    }
+  },
+  "version": "1.1"
+}

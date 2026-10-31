@@ -1,0 +1,23 @@
+{
+  "sourceLanguage": "en",
+  "strings": {
+    "NSLocalNetworkUsageDescription": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Connect to the Paperclip server you configure to read tasks and agents."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "连接你在设置中填写的 Paperclip 服务器，读取任务和 Agent。"
+          }
+        }
+      }
+    }
+  },
+  "version": "1.0"
+}

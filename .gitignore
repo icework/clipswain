@@ -1,0 +1,28 @@
+.DS_Store
+*.xcodeproj/xcuserdata/
+*.xcworkspace/xcuserdata/
+DerivedData/
+build/
+.build/
+.swiftpm/
+Config/Local.xcconfig
+Clipswain.xcodeproj/
+
+# Local agent tooling notes
+.claude/agent-memory/
+
+# Credentials and signing artifacts
+.env
+.env.*
+!.env.example
+*.p12
+*.p8
+*.mobileprovision
+*.provisionprofile
+*.key
+
+# Local test outputs
+*.xcresult/
+*.xcarchive/
+*.ipa
+*.log

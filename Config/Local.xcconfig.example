@@ -1,0 +1,4 @@
+// Copy to Local.xcconfig only if it does not already exist (git-ignored).
+// Use your own signing team and a bundle identifier registered to that team.
+DEVELOPMENT_TEAM = YOUR_TEAM_ID
+APP_IDENTIFIER = com.yourname.clipswain

@@ -1,0 +1,26 @@
+name: Bug report
+description: Report a reproducible app or compatibility problem.
+title: "[Bug] "
+body:
+  - type: markdown
+    attributes:
+      value: "Use synthetic data. Do not include API keys, private server addresses, company records, or full production logs. For vulnerabilities, see SECURITY.md."
+  - type: input
+    id: versions
+    attributes:
+      label: Versions
+      description: App commit, Xcode / iOS versions, and Paperclip server version or commit.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Steps to reproduce
+      description: Include expected and actual behavior; redact private information.
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Sanitized evidence
+      description: Minimal error text or screenshots using synthetic data only.

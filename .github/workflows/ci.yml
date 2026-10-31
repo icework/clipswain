@@ -1,0 +1,88 @@
+name: Validate
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: validate-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    runs-on: macos-26
+    timeout-minutes: 30
+    env:
+      # Stable SDK listed by actions/runner-images; Xcode 27 is not required by CI.
+      DEVELOPER_DIR: /Applications/Xcode_26.6.app/Contents/Developer
+      PAPERCLIP_TEST_URL: ''
+      PAPERCLIP_TEST_TOKEN: ''
+      PAPERCLIP_TEST_MODEL_CATALOGS: ''
+      PAPERCLIP_ATTACHMENT_TEST_ORIGIN: ''
+      PAPERCLIP_NETWORK_TEST_ORIGIN: ''
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          persist-credentials: false
+      - name: Install pinned XcodeGen
+        shell: bash
+        run: |
+          set -euo pipefail
+          archive="$RUNNER_TEMP/xcodegen.zip"
+          curl --fail --location --retry 3 \
+            https://github.com/yonaskolb/XcodeGen/releases/download/2.46.0/xcodegen.zip \
+            --output "$archive"
+          printf '%s  %s\n' '4d9e34b62172d645eed6457cac13fc222569974098ef4ee9c3368bedf0196806' "$archive" | shasum -a 256 --check
+          unzip -q "$archive" -d "$RUNNER_TEMP/xcodegen-release"
+          echo "$RUNNER_TEMP/xcodegen-release/xcodegen/bin" >> "$GITHUB_PATH"
+      - name: Toolchain
+        run: |
+          xcodebuild -version
+          swift --version
+          xcodegen --version
+      - name: Localization and privacy manifests
+        run: |
+          python3 scripts/check-localizations.py
+          python3 scripts/check-public-materials.py
+          plutil -lint Config/PrivacyInfo.xcprivacy
+          plutil -lint PaperclipKit/Sources/PaperclipKit/Resources/PrivacyInfo.xcprivacy
+      - name: Offline package tests
+        run: env -u PAPERCLIP_TEST_URL -u PAPERCLIP_TEST_TOKEN -u PAPERCLIP_TEST_MODEL_CATALOGS -u PAPERCLIP_ATTACHMENT_TEST_ORIGIN -u PAPERCLIP_NETWORK_TEST_ORIGIN swift test --package-path PaperclipKit
+      - name: Local download and transport security fixtures
+        run: |
+          python3 scripts/verify-task-result-downloads.py
+          python3 scripts/verify-network-security.py
+      - name: Generate Xcode project
+        run: xcodegen generate
+      - name: Select available iPhone simulator
+        shell: bash
+        run: |
+          python3 - <<'PYTHON'
+          import json, os, subprocess
+          inventory = json.loads(subprocess.check_output(['xcrun', 'simctl', 'list', 'devices', 'available', '--json']))
+          candidates = []
+          for runtime, devices in inventory['devices'].items():
+              if '.iOS-' not in runtime:
+                  continue
+              version = tuple(int(part) for part in runtime.rsplit('.iOS-', 1)[1].split('-'))
+              for device in devices:
+                  if device.get('isAvailable') and device['name'].startswith('iPhone'):
+                      candidates.append((version, device['name'], device['udid']))
+          if not candidates:
+              raise SystemExit('No available iPhone simulator. Check the runner image and installed runtimes.')
+          _, name, udid = max(candidates)
+          with open(os.environ['GITHUB_ENV'], 'a') as output:
+              output.write(f'SIMULATOR_UDID={udid}\n')
+          print(f'Selected {name} ({udid})')
+          PYTHON
+      - name: Build and run App tests
+        run: |
+          xcodebuild -project Clipswain.xcodeproj -scheme Clipswain \
+            -destination "platform=iOS Simulator,id=$SIMULATOR_UDID" \
+            -derivedDataPath "$RUNNER_TEMP/PaperclipDerivedData" \
+            CODE_SIGNING_ALLOWED=NO -only-testing:ClipswainAppTests test
